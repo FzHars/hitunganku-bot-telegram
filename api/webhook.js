@@ -6,6 +6,7 @@ const { handleGuidedStart, handleGuidedInput, handleGuidedAction } = require('..
 const { askGemini } = require('../utils/gemini');
 const { checkQuota, incrementUsage } = require('../utils/quota');
 const { createReminder, listReminders, deleteReminder } = require('../handlers/reminder');
+const { handlePhoto, confirmReceipt } = require('../handlers/photo');
 const { generateExcel } = require('../utils/formatter');
 const logger = require('../utils/logger');
 
@@ -188,6 +189,19 @@ bot.command('catat_ai', async (ctx) => {
     logger.error('AI command failed', { user_id: user.id, error: err.message });
     return ctx.reply('Gagal memproses AI, coba lagi nanti.');
   }
+});
+
+bot.on('photo', (ctx) => handlePhoto(ctx));
+bot.action('receipt_simpan', (ctx) => confirmReceipt(ctx));
+bot.action('receipt_ulang', async (ctx) => {
+  ctx.state.receiptData = null;
+  ctx.state.photoBuffer = null;
+  return ctx.editMessageText('Upload ulang foto struk.');
+});
+bot.action('receipt_batal', async (ctx) => {
+  ctx.state.receiptData = null;
+  ctx.state.photoBuffer = null;
+  return ctx.editMessageText('Dibatalkan.');
 });
 
 bot.command('start', async (ctx) => {
