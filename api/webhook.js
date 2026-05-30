@@ -5,6 +5,7 @@ const { authMiddleware, handleFinanceCommand, addFinanceRecord, listRecords, del
 const { handleGuidedStart, handleGuidedInput, handleGuidedAction } = require('../handlers/message');
 const { askGemini } = require('../utils/gemini');
 const { checkQuota, incrementUsage } = require('../utils/quota');
+const { createReminder, listReminders, deleteReminder } = require('../handlers/reminder');
 const { generateExcel } = require('../utils/formatter');
 const logger = require('../utils/logger');
 
@@ -117,6 +118,21 @@ bot.action('hapus_mode', async (ctx) => {
 
   return ctx.reply('Pilih catatan yang mau dihapus:', Markup.inlineKeyboard(buttons));
 });
+bot.command('reminder', (ctx) => createReminder(ctx));
+bot.command('reminder_list', (ctx) => listReminders(ctx));
+bot.action(/hapus_remind_\d+/, async (ctx) => {
+  const id = ctx.match[0].replace('hapus_remind_', '');
+  await deleteReminder(ctx, parseInt(id));
+});
+
+bot.command('ingatkan', (ctx) => createReminder(ctx));
+bot.command('reminder_list', (ctx) => listReminders(ctx));
+bot.action(/hapus_reminder_(\d+)/, async (ctx) => {
+  const id = ctx.match[1];
+  await deleteReminder(ctx, parseInt(id));
+  ctx.answerCbQuery('Reminder dihapus');
+});
+
 bot.action(/hapus_\d+/, async (ctx) => {
   const id = ctx.match[0].replace('hapus_', '');
   await deleteRecord(ctx, parseInt(id));
