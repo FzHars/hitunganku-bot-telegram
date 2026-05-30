@@ -34,6 +34,29 @@ bot.command('download', async (ctx) => {
   }
 });
 
+bot.action('catat', (ctx) => handleGuidedStart(ctx));
+bot.action('saldo', async (ctx) => {
+  const user = ctx.state.user;
+  const { data } = await require('../config/database')
+    .from('finance_records')
+    .select('type, amount')
+    .eq('user_id', user.id)
+    .eq('is_deleted', false);
+
+  if (!data || data.length === 0) return ctx.reply('Belum ada transaksi.');
+
+  const totalMasuk = data.filter(r => r.type === 'pemasukan').reduce((s, r) => s + parseFloat(r.amount), 0);
+  const totalKeluar = data.filter(r => r.type === 'pengeluaran').reduce((s, r) => s + parseFloat(r.amount), 0);
+
+  return ctx.reply(
+    `Saldo Kamu\n\nMasuk: Rp ${totalMasuk.toLocaleString('id-ID')}\nKeluar: Rp ${totalKeluar.toLocaleString('id-ID')}\nSaldo: Rp ${(totalMasuk - totalKeluar).toLocaleString('id-ID')}`
+  );
+});
+bot.action('bantuan', (ctx) => {
+  return ctx.reply(
+    `Bantuan NekoFinance\n\n/start - Menu utama\n/keluar 50000 makan siang - Catat pengeluaran\n/masuk 100000 gaji - Catat pemasukan\n/catat - Catat pake tombol\n/catat_ai - Catat pake AI (Level 2+)\n/list - Lihat transaksi\n/download - Download Excel\n\nAda pertanyaan? Hubungi admin.`
+  );
+});
 bot.action(/guided_.+/, (ctx) => handleGuidedAction(ctx));
 bot.action(/detail_\d+/, async (ctx) => {
   const id = ctx.match[0].replace('detail_', '');
