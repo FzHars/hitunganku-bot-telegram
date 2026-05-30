@@ -43,7 +43,7 @@ bot.action(/detail_\d+/, async (ctx) => {
     .eq('id', id)
     .single();
 
-  if (!record) return ctx.answerCbQuery('Data tidak ditemukan');
+  if (!record) return ctx.answerCbQuery('Data tidak ditemukan😔');
 
   const label = record.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran';
   return ctx.reply(
@@ -79,7 +79,7 @@ bot.on('text', (ctx) => handleGuidedInput(ctx));
 bot.command('catat_ai', async (ctx) => {
   const user = ctx.state.user;
   if (user.level < 2) {
-    return ctx.reply('Fitur AI hanya untuk Level 2+. Upgrade subscription yuk!');
+    return ctx.reply('Fitur AI hanya untuk Level 2+. Upgrade yuk!😄');
   }
 
   const quota = await checkQuota(user);
@@ -87,7 +87,7 @@ bot.command('catat_ai', async (ctx) => {
 
   const text = ctx.message.text.replace('/catat_ai', '').trim();
   if (!text) {
-    return ctx.reply('Contoh: `/catat_ai bro catat gojekan 30rb`');
+    return ctx.reply('Contoh: `/catat_ai bro/sis catat gojek 30rb`');
   }
 
   try {
@@ -132,7 +132,7 @@ bot.command('start', async (ctx) => {
   const welcome = `Halo ${user.full_name || 'Sobat'}!\n\n`
     + `Level kamu: ${user.level} (${featureMap[user.level] || '-'})\n`
     + `Status: ${user.status}\n\n`
-    + `Apa yang mau dilakukan?`;
+    + `Apa yang mau dilakukan?😸`;
 
   return ctx.reply(welcome, Markup.inlineKeyboard([
     [Markup.button.callback('Catat Transaksi', 'catat')],
