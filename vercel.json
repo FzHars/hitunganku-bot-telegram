@@ -1,8 +1,5 @@
 {
   "functions": {
     "api/**": { "maxDuration": 10 }
-  },
-  "crons": [
-    { "path": "/api/cron-reminder", "schedule": "* * * * *" }
-  ]
+  }
 }
