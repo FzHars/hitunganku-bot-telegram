@@ -57,6 +57,31 @@ bot.action('bantuan', (ctx) => {
     `Bantuan NekoFinance\n\n/start - Menu utama\n/keluar 50000 makan siang - Catat pengeluaran\n/masuk 100000 gaji - Catat pemasukan\n/catat - Catat pake tombol\n/catat_ai - Catat pake AI (Level 2+)\n/list - Lihat transaksi\n/download - Download Excel\n\nAda pertanyaan? Hubungi admin.`
   );
 });
+bot.action('catat', (ctx) => handleGuidedStart(ctx));
+bot.action('saldo', async (ctx) => {
+  const user = ctx.state.user;
+  const { data: records } = await supabase
+    .from('finance_records')
+    .select('type, amount')
+    .eq('user_id', user.id)
+    .eq('is_deleted', false);
+
+  if (!records || records.length === 0) return ctx.reply('Belum ada transaksi.');
+
+  let masuk = 0, keluar = 0;
+  for (const r of records) {
+    if (r.type === 'pemasukan') masuk += parseFloat(r.amount);
+    else keluar += parseFloat(r.amount);
+  }
+  const saldo = masuk - keluar;
+  return ctx.reply(
+    `Saldo kamu:\nPemasukan: Rp ${masuk.toLocaleString('id-ID')}\nPengeluaran: Rp ${keluar.toLocaleString('id-ID')}\nSaldo: Rp ${saldo.toLocaleString('id-ID')}`
+  );
+});
+bot.action('bantuan', (ctx) => ctx.reply(
+  'Perintah:\n/keluar 50000 makan siang - catat pengeluaran\n/masuk 100000 gaji - catat pemasukan\n/catat - input dengan tombol\n/catat_ai - input pakai AI\n/list - lihat catatan\n/download - export Excel\n/hapus - hapus catatan'
+));
+
 bot.action(/guided_.+/, (ctx) => handleGuidedAction(ctx));
 bot.action(/detail_\d+/, async (ctx) => {
   const id = ctx.match[0].replace('detail_', '');
