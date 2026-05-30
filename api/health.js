@@ -2,9 +2,10 @@ const supabase = require('../config/database');
 
 module.exports = async (req, res) => {
   try {
-    const { count, error } = await supabase
+    const { data, error } = await supabase
       .from('users')
-      .select('*', { count: 'exact', head: true });
+      .select('id')
+      .limit(1);
 
     if (error) {
       return res.status(500).json({
