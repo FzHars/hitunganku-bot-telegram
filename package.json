@@ -1,0 +1,28 @@
+{
+  "name": "bot-telegram",
+  "version": "1.0.0",
+  "description": "Multi-tenant Telegram Finance Bot with AI",
+  "main": "api/webhook.js",
+  "scripts": {
+    "dev": "nodemon api/webhook.js",
+    "start": "node api/webhook.js",
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.2",
+    "axios": "^1.16.1",
+    "date-fns": "^4.4.0",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "telegraf": "4.14"
+  },
+  "devDependencies": {
+    "eslint": "^10.4.1",
+    "nodemon": "^3.1.14"
+  }
+}
