@@ -1,0 +1,3 @@
+curl -F "url=https://hitunganku-bot-telegram.vercel.app/api/webhook" \
+  -F "secret_token=1f20877b053ce26d2d83a8ce037b6d0ab4debddc829accc227d439ad0bfb114e" \
+  "https://api.telegram.org/bot8923457932:AAHN0IBgsw_Bz5gzFw59XTOpUaDlF-gL-xU/setWebhook"

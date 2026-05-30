@@ -227,9 +227,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    await bot.handleUpdate(req.body, res);
+    await bot.handleUpdate(req.body);
+    res.status(200).end();
   } catch (err) {
-    logger.error('Webhook error', { error: err.message });
+    logger.error('Webhook error', { error: err.message, stack: err.stack });
     res.status(200).end();
   }
 };
