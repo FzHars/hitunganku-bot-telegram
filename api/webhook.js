@@ -1,8 +1,10 @@
 const { Telegraf } = require('telegraf');
 const rateLimit = require('telegraf-ratelimit');
 const supabase = require('../config/database');
-const { authMiddleware, handleFinanceCommand, listRecords, deleteRecord } = require('../handlers/command');
+const { authMiddleware, handleFinanceCommand, addFinanceRecord, listRecords, deleteRecord } = require('../handlers/command');
 const { handleGuidedStart, handleGuidedInput, handleGuidedAction } = require('../handlers/message');
+const { askGemini } = require('../utils/gemini');
+const { checkQuota, incrementUsage } = require('../utils/quota');
 const { generateExcel } = require('../utils/formatter');
 const logger = require('../utils/logger');
 
@@ -73,6 +75,56 @@ bot.action(/hapus_\d+/, async (ctx) => {
   ctx.answerCbQuery('Catatan dihapus');
 });
 bot.on('text', (ctx) => handleGuidedInput(ctx));
+
+bot.command('catat_ai', async (ctx) => {
+  const user = ctx.state.user;
+  if (user.level < 2) {
+    return ctx.reply('Fitur AI hanya untuk Level 2+. Upgrade subscription yuk!');
+  }
+
+  const quota = await checkQuota(user);
+  if (!quota.allowed) return ctx.reply(quota.message);
+
+  const text = ctx.message.text.replace('/catat_ai', '').trim();
+  if (!text) {
+    return ctx.reply('Contoh: `/catat_ai bro catat gojekan 30rb`');
+  }
+
+  try {
+    const response = await askGemini(text);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(response);
+    } catch {
+      return ctx.reply(`AI tidak bisa memahami input. Coba lagi.\n\nPesan AI: ${response}`);
+    }
+
+    if (!parsed.type || !parsed.amount || !parsed.description) {
+      return ctx.reply('AI gagal mengekstrak data. Coba format lain.');
+    }
+
+    if (parsed.type !== 'pengeluaran' && parsed.type !== 'pemasukan') {
+      return ctx.reply('Tipe transaksi harus pengeluaran atau pemasukan.');
+    }
+
+    const { validateAmount, validateDescription } = require('../utils/validators');
+    const amountResult = validateAmount(parsed.amount);
+    if (!amountResult.valid) return ctx.reply(amountResult.error);
+
+    const descResult = validateDescription(parsed.description);
+    if (!descResult.valid) return ctx.reply(descResult.error);
+
+    await addFinanceRecord(user.id, parsed.type, amountResult.value, descResult.value, 'ai');
+    await incrementUsage(user);
+
+    const label = parsed.type === 'pengeluaran' ? 'Pengeluaran' : 'Pemasukan';
+    return ctx.reply(`Dicatat via AI!\n${label}: Rp ${amountResult.value.toLocaleString('id-ID')}\n${descResult.value}\n\nSisa kuota AI hari ini: ${user.daily_ai_limit - user.ai_usage_today}/${user.daily_ai_limit}`);
+  } catch (err) {
+    logger.error('AI command failed', { user_id: user.id, error: err.message });
+    return ctx.reply('Gagal memproses AI, coba lagi nanti.');
+  }
+});
 
 bot.command('start', async (ctx) => {
   const user = ctx.state.user;
