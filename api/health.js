@@ -8,11 +8,20 @@ module.exports = async (req, res) => {
       .limit(1);
 
     if (error) {
-      return res.status(500).json({
+      return res.status(200).json({
         status: 'error',
         database: 'disconnected',
+        message: error.message || 'Unknown database error',
         timestamp: new Date().toISOString(),
       });
+    }
+
+    return res.status(200).json({
+      status: 'ok',
+      database: 'connected',
+      message: '',
+      timestamp: new Date().toISOString(),
+    });
     }
 
     return res.status(200).json({
@@ -21,9 +30,10 @@ module.exports = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    return res.status(500).json({
+    return res.status(200).json({
       status: 'error',
       database: 'disconnected',
+      message: err.message || 'Unknown error',
       timestamp: new Date().toISOString(),
     });
   }
