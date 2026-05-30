@@ -1,9 +1,14 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) throw new Error('GEMINI_API_KEY must be set in env');
-
-const genAI = new GoogleGenerativeAI(apiKey);
+let genAI;
+function getGenAI() {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('GEMINI_API_KEY not set');
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+}
 
 const SYSTEM_PROMPT = `Kamu adalah asisten keuangan bernama Hitunganku.
 RULES:
@@ -15,7 +20,7 @@ RULES:
 5. BAHASA Indonesia selalu`;
 
 async function askGemini(userMessage) {
-  const model = genAI.getGenerativeModel({
+  const model = getGenAI().getGenerativeModel({
     model: 'gemini-3.1-flash-lite',
     systemInstruction: SYSTEM_PROMPT,
   });
@@ -25,7 +30,7 @@ async function askGemini(userMessage) {
 }
 
 async function askGeminiWithImage(userMessage, imageBuffer, mimeType) {
-  const model = genAI.getGenerativeModel({
+  const model = getGenAI().getGenerativeModel({
     model: 'gemini-3.1-flash-lite',
     systemInstruction: SYSTEM_PROMPT,
   });
